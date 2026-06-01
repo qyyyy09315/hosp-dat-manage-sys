@@ -1,0 +1,1 @@
+"medicine_id"	"name"	"description"	"stock"	"last_updated"	"created_at"

@@ -1,0 +1,45 @@
+# 医院管理系统数据库账号最小化权限配置指南
+
+## 一、创建专用业务账号
+不要使用root账号连接业务系统，创建专用的业务账号：
+```sql
+-- 创建账号，限制只能本地登录
+CREATE USER 'hospital_user'@'localhost' IDENTIFIED BY '你的复杂密码';
+```
+
+## 二、分配最小必要权限
+只给业务账号需要的权限，不要给ALL PRIVILEGES：
+```sql
+-- 只分配业务库的增删改查权限，不给删表、改表结构等权限
+GRANT SELECT, INSERT, UPDATE, DELETE ON oh.* TO 'hospital_user'@'localhost';
+
+-- 刷新权限
+FLUSH PRIVILEGES;
+```
+
+## 三、禁止的权限
+绝对不要给业务账号以下权限：
+1. `ALTER`：修改表结构权限
+2. `DROP`：删除库/表权限
+3. `CREATE`：创建库/表权限
+4. `FILE`：文件读写权限，防止读取敏感文件
+5. `SUPER`：超级管理员权限
+6. `PROCESS`：查看进程权限
+7. `REPLICATION`：主从复制相关权限
+
+## 四、修改代码中的数据库连接配置
+替换所有Java代码中的数据库账号密码为新创建的账号：
+```java
+// 原来的root账号连接
+conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/oh", "root", "123456");
+
+// 替换为专用业务账号
+conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/oh", "hospital_user", "你的复杂密码");
+```
+
+## 五、安全建议
+1. 密码复杂度要求：长度≥12位，包含大小写字母、数字、特殊字符
+2. 定期更换数据库密码，至少每3个月更换一次
+3. 生产环境禁止数据库对外网开放端口，只允许本地或指定IP访问
+4. 开启数据库审计日志，记录所有SQL操作，方便事后溯源
+5. 定期备份数据库，备份文件加密存储
