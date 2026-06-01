@@ -1,0 +1,1 @@
+"bill_id"	"patient_id"	"total_amount"	"status"	"created_at"
