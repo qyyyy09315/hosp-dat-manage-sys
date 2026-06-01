@@ -2,6 +2,7 @@ package com.sxt;
 
 import com.jtattoo.plaf.fast.FastLookAndFeel;
 import com.sxt.common.DBUtils;
+import com.sxt.common.PasswordUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -136,13 +137,16 @@ public class Sur extends JFrame {
             conn = DBUtils.getConnection();
 
             // 查询用户账号
-            String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+            String sql = "SELECT * FROM users WHERE username = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, username);
-            stmt.setString(2, password);
             rs = stmt.executeQuery();
 
             if (rs.next()) {
+                String storedHash = rs.getString("password");
+                if (!PasswordUtils.verify(password, storedHash)) {
+                    throw new RuntimeException("密码错误");
+                }
                 loginSuccess = true;
                 // 查询用户角色
                 String roleSql = "SELECT r.role_name FROM sys_user_role ur LEFT JOIN sys_role r ON ur.role_id = r.role_id WHERE ur.username = ?";
@@ -180,9 +184,14 @@ public class Sur extends JFrame {
                 JOptionPane.showMessageDialog(this, errorMsg, "错误", JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception ex) {
-            errorMsg = "数据库连接失败：" + ex.getMessage();
-            JOptionPane.showMessageDialog(this, "数据库连接失败！", "错误", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            if ("密码错误".equals(ex.getMessage())) {
+                errorMsg = "密码错误";
+                JOptionPane.showMessageDialog(this, "用户名或密码错误！", "错误", JOptionPane.ERROR_MESSAGE);
+            } else {
+                errorMsg = "数据库连接失败：" + ex.getMessage();
+                JOptionPane.showMessageDialog(this, "数据库连接失败！", "错误", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
         } finally {
             DBUtils.close(conn, permStmt, permRs);
             DBUtils.close(null, roleStmt, roleRs);
