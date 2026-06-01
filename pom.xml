@@ -27,6 +27,12 @@
             <artifactId>JTattoo</artifactId>
             <version>1.6.13</version>
         </dependency>
+        <!-- BCrypt密码哈希 -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
 
     </dependencies>
 

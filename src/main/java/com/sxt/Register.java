@@ -1,6 +1,7 @@
 package com.sxt;
 
 import com.sxt.common.DBUtils;
+import com.sxt.common.PasswordUtils;
 import com.sxt.common.UIUtils;
 import javax.swing.*;
 import java.awt.*;
@@ -136,11 +137,12 @@ public class Register extends JFrame {
                 return;
             }
 
-            // 插入新用户
+            String hashedPassword = PasswordUtils.hash(password);
+
             String insertSql = "INSERT INTO users (username, password, role) VALUES (?, ?, '用户')";
             insertStmt = conn.prepareStatement(insertSql);
             insertStmt.setString(1, username);
-            insertStmt.setString(2, password);
+            insertStmt.setString(2, hashedPassword);
 
             int rows = insertStmt.executeUpdate();
             if (rows > 0) {
